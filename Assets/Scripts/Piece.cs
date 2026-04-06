@@ -4,43 +4,31 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    private int row;
-    private int column;
-    private bool selected;
+    public Sprite[] sprites;
+
+    private int _row;
+    private int _column;
+    private bool _selected;
+    private int _type;
+
+    SpriteRenderer sr;
+
 
     private Board board;
 
     public GameObject selector;
 
-    public bool Selected
+    public void Select()
     {
-        get { return selected; }
-        set 
-        {
-            selected = value;
-            selector.SetActive(selected);
-            if (selected) selector.GetComponent<Animator>().Play("Idle");
-        }
+        _selected = true;
+        selector.SetActive(true);
+        selector.GetComponent<Animator>().Play("Idle");
     }
 
-    public int Row
+    public void Unselect()
     {
-        get { return row; }
-        set
-        {
-            row = value;
-            UpdatePosition();
-        }
-    }
-
-    public int Column
-    {
-        get { return column; }
-        set
-        {
-            column = value;
-            UpdatePosition();
-        }
+        _selected = false;
+        selector.SetActive(false);
     }
 
     public Board Board
@@ -51,34 +39,42 @@ public class Piece : MonoBehaviour
 
     private void UpdatePosition()
     {
-        transform.localPosition = new Vector3(column, row);
+        transform.localPosition = new Vector3(_column, _row);
     }
 
-    SpriteRenderer sr;
-
-    private int type;
-    public int Type
+    public int GetType()
     {
-        get { return type; }
-        set { 
-            type = value;
-            sr.sprite = sprites[type];
-        }
+        return _type;
+    } 
+    public void SetType(int type)
+    {
+        _type = type;
+        sr.sprite = sprites[type];
     }
 
-    public Sprite[] sprites;
 
     private void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
-        Selected = false;
-        Type = Random.Range(0, 7);
+        Unselect();
+        SetType(Random.Range(0, 7));
+    }
+
+    public int GetRow()
+    {
+        return _row;
+    }
+
+    public int GetColumn()
+    {
+        return _column;
     }
 
     public void SetPosition(int row, int column)
     {
-        Row = row;
-        Column = column;
+        _row = row;
+        _column = column;
+        UpdatePosition();
     }
 
     private void OnMouseDown()

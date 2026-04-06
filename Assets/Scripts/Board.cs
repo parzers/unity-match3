@@ -9,9 +9,18 @@ public class Board : MonoBehaviour
 
     private List<Piece> selectedPieces;
 
+    enum State
+    {
+        Idle,
+        Animation,
+    }
+
+    State currentState;
+
     private void Awake()
     {
         selectedPieces = new List<Piece>();
+        currentState = State.Idle;
     }
 
     private void Start()
@@ -36,15 +45,16 @@ public class Board : MonoBehaviour
         if (selectedPieces.Count < 2)
         {
             selectedPieces.Add(p);
-            p.Selected = true;
+            p.Select();
         }
         if (selectedPieces.Count >= 2)
         {
-            selectedPieces[0].Selected = false;
-            selectedPieces[1].Selected = false;
-            var tmp = selectedPieces[0].Type;
-            selectedPieces[0].Type = selectedPieces[1].Type;
-            selectedPieces[1].Type = tmp;
+            selectedPieces[0].Unselect();
+            selectedPieces[1].Unselect();
+            int type0 = selectedPieces[0].GetType();
+            int type1 = selectedPieces[1].GetType();
+            selectedPieces[0].SetType(type1);
+            selectedPieces[1].SetType(type0);
             selectedPieces.Clear();
         }
     }
@@ -103,7 +113,7 @@ public class Board : MonoBehaviour
         foreach (var piece in matchedPieces)
         {
             //piece.GetComponent<SpriteRenderer>().color = new Color(1.0f, 1.0f, 1.0f, 0.5f);
-            pieces[piece.Row, piece.Column] = null;
+            pieces[piece.GetRow(), piece.GetColumn()] = null;
             Destroy(piece.gameObject);
             numDestroyed++;
         }
@@ -123,7 +133,7 @@ public class Board : MonoBehaviour
             {
                 var piece = pieces[row, col];
                 int pieceType = -1;
-                if (piece != null) pieceType = piece.Type;
+                if (piece != null) pieceType = piece.GetType();
                 if (currentType != pieceType)
                 {
                     if (currentMatch.Count >= 3)
@@ -150,7 +160,7 @@ public class Board : MonoBehaviour
             {
                 var piece = pieces[row, col];
                 int pieceType = -1;
-                if (piece != null) pieceType = piece.Type;
+                if (piece != null) pieceType = piece.GetType();
                 if (currentType != pieceType)
                 {
                     if (currentMatch.Count >= 3)
@@ -179,7 +189,7 @@ public class Board : MonoBehaviour
             for (int column = 0; column < pieces.GetLength(1); column++)
             {
                 Piece currentPiece = pieces[row, column];
-                message += currentPiece.Type + " ";
+                message += currentPiece.GetType() + " ";
             }
             message += "\n";
         }
