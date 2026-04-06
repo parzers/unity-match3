@@ -9,18 +9,18 @@ public class Board : MonoBehaviour
 
     private List<Piece> selectedPieces;
 
-    enum State
+    public enum State
     {
         Idle,
-        Animation,
+        Moving,
     }
 
-    State currentState;
+    public State _currentState;
 
     private void Awake()
     {
         selectedPieces = new List<Piece>();
-        currentState = State.Idle;
+        _currentState = State.Idle;
     }
 
     private void Start()
@@ -31,13 +31,40 @@ public class Board : MonoBehaviour
             for (int column = 0; column < pieces.GetLength(1); column++)
             {
                 Piece newPiece = Instantiate(piecePrefab, transform, false);
-                newPiece.SetPosition(row, column);
+                newPiece.SetPosition(row, column, false);
                 newPiece.Board = this;
                 pieces[row, column] = newPiece;
             }
         }
 
         LogPieces();
+    }
+
+    private void Update()
+    {
+        if (_currentState == State.Moving)
+        {
+            if (!AnyPiecesMoving())
+            {
+                _currentState = State.Idle;
+            }
+        }
+    }
+
+    public bool AnyPiecesMoving()
+    {
+        for (int row = 0; row < pieces.GetLength(0); row++)
+        {
+            for (int column = 0; column < pieces.GetLength(1); column++)
+            {
+                Piece piece = pieces[row, column];
+                if (piece != null && piece._state == Piece.State.MoveAnimation)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void SelectPiece(Piece p)
@@ -78,10 +105,11 @@ public class Board : MonoBehaviour
                 for (int i = 0; i < columnPieces.Count; i++)
                 {
                     pieces[i, col] = columnPieces[i];
-                    pieces[i, col].SetPosition(i, col);
+                    pieces[i, col].SetPosition(i, col, true);
                 }
             }
         }
+        _currentState = State.Moving;
     }
 
     public void Refill()
@@ -94,7 +122,7 @@ public class Board : MonoBehaviour
                 if (pieces[row, col] != null) break;
 
                 Piece newPiece = Instantiate(piecePrefab, transform, false);
-                newPiece.SetPosition(row, col);
+                newPiece.SetPosition(row, col, false);
                 newPiece.Board = this;
                 pieces[row, col] = newPiece;
             }

@@ -157,7 +157,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48593140cd4ddbe44af92bfe5201de11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selector: {fileID: 1097767273333566746}
   sprites:
   - {fileID: -8058703462916747342, guid: f428fb2c03ac29c4683727288a8059cc, type: 3}
   - {fileID: -7468916227126145943, guid: 9f332864dfc00d74a9011b60b62a2eae, type: 3}
@@ -166,6 +165,9 @@ MonoBehaviour:
   - {fileID: 77742445085426091, guid: 0e6577b186fd69944af7b15033fc165d, type: 3}
   - {fileID: 2996249169075143267, guid: 385d6568bc9069d4285f901e9585e0fd, type: 3}
   - {fileID: -6814462663402624562, guid: c17104722cc61c54daf68328f5ee38d0, type: 3}
+  _moveSpeed: 5
+  _state: 0
+  selector: {fileID: 1097767273333566746}
 --- !u!212 &679718792410072237
 SpriteRenderer:
   m_ObjectHideFlags: 0

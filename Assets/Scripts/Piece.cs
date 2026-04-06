@@ -5,29 +5,39 @@ using UnityEngine;
 public class Piece : MonoBehaviour
 {
     public Sprite[] sprites;
+    public float _moveSpeed = 5f;
 
     private int _row;
     private int _column;
-    private bool _selected;
     private int _type;
+
+    private Vector3 _animationTargetPosition;
 
     SpriteRenderer sr;
 
 
     private Board board;
 
+    public enum State
+    {
+        Idle,
+        Selected,
+        MoveAnimation,
+    }
+    public State _state;
+
     public GameObject selector;
 
     public void Select()
     {
-        _selected = true;
+        _state = State.Selected;
         selector.SetActive(true);
         selector.GetComponent<Animator>().Play("Idle");
     }
 
     public void Unselect()
     {
-        _selected = false;
+        _state = State.Idle;
         selector.SetActive(false);
     }
 
@@ -37,12 +47,12 @@ public class Piece : MonoBehaviour
         set { board = value; }
     }
 
-    private void UpdatePosition()
+    private void ResetTransformPosition()
     {
-        transform.localPosition = new Vector3(_column, _row);
+        transform.localPosition = new Vector2(_column, _row);
     }
 
-    public int GetType()
+    new public int GetType()
     {
         return _type;
     } 
@@ -60,6 +70,20 @@ public class Piece : MonoBehaviour
         SetType(Random.Range(0, 7));
     }
 
+    private void Update()
+    {
+        if (_state == State.MoveAnimation)
+        {
+            transform.localPosition = Vector2.MoveTowards(
+                transform.localPosition, _animationTargetPosition, Time.deltaTime * _moveSpeed);
+
+            if (transform.localPosition == _animationTargetPosition)
+            {
+                _state = State.Idle;
+            }
+        }
+    }
+
     public int GetRow()
     {
         return _row;
@@ -70,15 +94,26 @@ public class Piece : MonoBehaviour
         return _column;
     }
 
-    public void SetPosition(int row, int column)
+    public void SetPosition(int row, int column, bool animate)
     {
+        if (animate)
+        {
+            _animationTargetPosition = new Vector2(column, row);
+            _state = State.MoveAnimation;
+        }
+        else
+        {
+            transform.localPosition = new Vector3(column, row);
+        }
         _row = row;
         _column = column;
-        UpdatePosition();
     }
 
     private void OnMouseDown()
     {
-        board.SelectPiece(this);
+        if (_state == State.Idle)
+        {
+            board.SelectPiece(this);
+        }
     }
 }
