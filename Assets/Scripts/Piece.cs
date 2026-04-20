@@ -13,20 +13,25 @@ public class Piece : MonoBehaviour
 
     private Vector3 _animationTargetPosition;
 
-    SpriteRenderer sr;
-
-
-    private Board board;
+    private SpriteRenderer _sr;
+    private Board _board;
 
     public enum State
     {
         Idle,
         Selected,
+        SwapAnimation,
         MoveAnimation,
+        DestroyAnimation,
     }
     public State _state;
 
     public GameObject selector;
+
+    public void SetBoard(Board board)
+    {
+        _board = board;
+    }
 
     public void Select()
     {
@@ -41,17 +46,6 @@ public class Piece : MonoBehaviour
         selector.SetActive(false);
     }
 
-    public Board Board
-    {
-        get { return board; }
-        set { board = value; }
-    }
-
-    private void ResetTransformPosition()
-    {
-        transform.localPosition = new Vector2(_column, _row);
-    }
-
     new public int GetType()
     {
         return _type;
@@ -59,26 +53,54 @@ public class Piece : MonoBehaviour
     public void SetType(int type)
     {
         _type = type;
-        sr.sprite = sprites[type];
+        _sr.sprite = sprites[type];
     }
 
 
     private void Awake()
     {
-        sr = GetComponent<SpriteRenderer>();
+        _sr = GetComponent<SpriteRenderer>();
         Unselect();
         SetType(Random.Range(0, 7));
     }
 
     private void Update()
     {
-        if (_state == State.MoveAnimation)
+        if (_state == State.MoveAnimation || _state == State.SwapAnimation)
         {
-            transform.localPosition = Vector2.MoveTowards(
-                transform.localPosition, _animationTargetPosition, Time.deltaTime * _moveSpeed);
-
-            if (transform.localPosition == _animationTargetPosition)
+            if (_board._animationsEnabled)
             {
+                transform.localPosition = Vector2.MoveTowards(
+                    transform.localPosition, _animationTargetPosition, Time.deltaTime * _moveSpeed);
+
+                if (transform.localPosition == _animationTargetPosition)
+                {
+                    _state = State.Idle;
+                }
+            } 
+            else
+            {
+                _state = State.Idle;
+                transform.localPosition = _animationTargetPosition;
+            }
+        }
+        if (_state == State.DestroyAnimation)
+        {
+            if (_board._animationsEnabled)
+            {
+                Animator animator = GetComponent<Animator>();
+                AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
+                if (state.IsName("Destroy") && state.normalizedTime >= 1.0f)
+                {
+                    _board.RemovePiece(_row, _column);
+                    Destroy(gameObject);
+                    _state = State.Idle;
+                }
+            }
+            else
+            {
+                _board.RemovePiece(_row, _column);
+                Destroy(gameObject);
                 _state = State.Idle;
             }
         }
@@ -94,26 +116,46 @@ public class Piece : MonoBehaviour
         return _column;
     }
 
-    public void SetPosition(int row, int column, bool animate)
+    public void SetPosition(int row, int column)
     {
-        if (animate)
-        {
-            _animationTargetPosition = new Vector2(column, row);
-            _state = State.MoveAnimation;
-        }
-        else
-        {
-            transform.localPosition = new Vector3(column, row);
-        }
+
+        transform.localPosition = new Vector3(column, row);
         _row = row;
         _column = column;
     }
 
+    public void MovePosition(int row, int column)
+    {
+        _animationTargetPosition = new Vector3(column, row);
+        _state = State.MoveAnimation;
+        _row = row;
+        _column = column;
+    }
+
+    public void SwapPosition(int row, int column)
+    {
+        _animationTargetPosition = new Vector3(column, row);
+        _state = State.SwapAnimation;
+        _row = row;
+        _column = column;
+    }
+
+    public void Destroy()
+    {
+        _state = State.DestroyAnimation;
+        GetComponent<Animator>().SetBool("Destroyed", true);
+    }
+
+    public bool IsAlive()
+    {
+        return _state != State.DestroyAnimation;
+    }
+
     private void OnMouseDown()
     {
-        if (_state == State.Idle)
+        if (_state == State.Idle && _board.GetState() == Board.State.Idle)
         {
-            board.SelectPiece(this);
+            _board.SelectPiece(this);
         }
     }
 }
