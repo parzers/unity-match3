@@ -71,11 +71,11 @@ public class Board : MonoBehaviour
             {
                 SelectPiece(row, col - 1);
             }
-            else if (Mathf.Abs(swipeVector.y) > 0.33f && row + 1 < _pieces.GetLength(0))
+            else if (swipeVector.y > 0.33f && row + 1 < _pieces.GetLength(0))
             {
                 SelectPiece(row + 1, col);
             }
-            else if (Mathf.Abs(swipeVector.y) < -0.33f && row - 1 >= 0)
+            else if (swipeVector.y < -0.33f && row - 1 >= 0)
             {
                 SelectPiece(row - 1, col);
             }
